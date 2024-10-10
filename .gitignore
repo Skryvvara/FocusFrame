@@ -1,0 +1,5 @@
+.idea/
+.vs-code/
+bin/
+
+.DS_Store
