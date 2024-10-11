@@ -46,7 +46,7 @@ The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 - [x] create initial systray mockup
 - [ ] create config file
 - [ ] load (read) config file
-- [ ] create UI ro edit config + write config file
+- [ ] create UI to edit config + write config file
 - [ ] detect programs that were moved previously and move automatically to configured location
 - [ ] add functionality for linux (low priority but planned)
 - [ ] add functionality for bsd (low priority but planned)
