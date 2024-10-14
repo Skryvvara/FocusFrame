@@ -1,0 +1,21 @@
+[global]
+  width = 2560
+  height = 1440
+  offsetX = 1280
+  offsetY = 0
+
+[managed_apps]
+  [managed_apps."Hades.exe"]
+    executable = "Hades.exe"
+    [managed_apps."Hades.exe".dimensions]
+      width = 2560
+      height = 1440
+      offsetX = 1280
+      offsetY = 0
+  [managed_apps."hollow_knight.exe"]
+    executable = "hollow_knight.exe"
+    [managed_apps."hollow_knight.exe".dimensions]
+      width = 2560
+      height = 1440
+      offsetX = 1280
+      offsetY = 0
