@@ -10,11 +10,10 @@ Currently, the values for the window dimension, position and offset are hardcode
 in the middle of a 49" ultrawide monitor, to change these values you currently have to modify the variables in the
 `window` package.
 
-While the application is running press `F4` to add an application to the list of managed applications.
-The application should then be moved to the desired values. Currently, there's no persistence for the managed applications
-so applications have to be added again every time the tool is restarted.
+While the application is running press `F4` to add or remove an application to/from the list of managed applications.
+The application should then be moved to the desired values. Managed applications are added to or removed from `config.toml`.
 
-This is a open source alternative to [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home)
+This is an open source alternative to [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home)
 consider using that software for a more feature-complete and stable state.
 
 ## Build
@@ -50,8 +49,8 @@ The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 
 - [x] move window and remove borders (core functionality)
 - [x] create initial systray mockup
-- [ ] create config file
-- [ ] load (read) config file
+- [x] create config file
+- [x] load (read) config file
 - [ ] create UI to edit config + write config file
 - [x] move managed apps automatically
 - [ ] add functionality for linux (low priority but planned)

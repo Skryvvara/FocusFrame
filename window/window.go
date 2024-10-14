@@ -42,14 +42,6 @@ const (
 	SWP_NOACTIVATE   = 0x0010
 )
 
-// TODO: don't hardcode this
-const (
-	TARGET_WIDTH    = 2560
-	TARGET_HEIGHT   = 1440
-	TARGET_OFFSET_X = 1280
-	TARGET_OFFSET_Y = 0
-)
-
 type RECT struct {
 	Left, Top, Right, Bottom int32
 }
@@ -177,7 +169,7 @@ func WatchForegroundWindowChange() {
 
 			fmt.Printf("Foreground window changed! New window exe: %s\n", executable)
 
-			for _, game := range config.ManagedApps {
+			for _, game := range config.Config.ManagedApps {
 				if game.Executable == executable {
 					MoveWindow(executable)
 				}
@@ -211,7 +203,7 @@ func WatchProcessStart() {
 
 		for _, proc := range processes {
 
-			for _, app := range config.ManagedApps {
+			for _, app := range config.Config.ManagedApps {
 				if strings.ToLower(app.Executable) == strings.ToLower(proc.Name) {
 					fmt.Printf("Process started: %s, PID: %d\n", proc.Name, proc.ProcessID)
 
@@ -266,7 +258,7 @@ func AddAppOnKeyPress(keyCode int) {
 	for {
 		// Check if the F4 key is pressed
 		if input.IsKeyPressed(keyCode) { // If the most significant bit is set, the key is pressed
-			fmt.Println(config.ManagedApps)
+			fmt.Println(config.Config.ManagedApps)
 			currentWindow := GetForegroundWindow()
 
 			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
@@ -275,19 +267,17 @@ func AddAppOnKeyPress(keyCode int) {
 			}
 
 			hit := false
-			for _, app := range config.ManagedApps {
+			for _, app := range config.Config.ManagedApps {
 				if app.Executable == executable {
 					hit = true
 				}
 			}
 
 			if !hit {
-				newApp := config.ManagedApp{
-					Executable: executable,
-				}
-
-				config.ManagedApps = append(config.ManagedApps, newApp)
+				config.AddApplication(executable)
 				MoveWindow(executable)
+			} else {
+				config.RemoveApplication(executable)
 			}
 		}
 
@@ -327,6 +317,8 @@ func MoveWindow(executable string) {
 		fmt.Println("Window style already correct, no changes needed.")
 	}
 
+	ws := config.GetWindowSettings(executable)
+
 	// Get the current window rectangle (position and size)
 	var rect RECT
 	_, _, err := procGetWindowRect.Call(uintptr(hWnd), uintptr(unsafe.Pointer(&rect)))
@@ -341,8 +333,8 @@ func MoveWindow(executable string) {
 	currentY := int(rect.Top)
 
 	// Only set the window position and size if they are different from the desired values
-	if currentWidth != TARGET_WIDTH || currentHeight != TARGET_HEIGHT || currentX != TARGET_OFFSET_X || currentY != TARGET_OFFSET_Y {
-		result, _, err := procSetWindowPos.Call(uintptr(hWnd), 0, uintptr(TARGET_OFFSET_X), uintptr(TARGET_OFFSET_Y), uintptr(TARGET_WIDTH), uintptr(TARGET_HEIGHT), SWP_NOZORDER|SWP_NOACTIVATE)
+	if currentWidth != ws.Width || currentHeight != ws.Height || currentX != ws.OffsetX || currentY != ws.OffsetY {
+		result, _, err := procSetWindowPos.Call(uintptr(hWnd), 0, uintptr(ws.OffsetX), uintptr(ws.OffsetY), uintptr(ws.Width), uintptr(ws.Height), SWP_NOZORDER|SWP_NOACTIVATE)
 		if result == 0 {
 			fmt.Printf("Failed to set window position. Error: %v\n", err)
 		} else {

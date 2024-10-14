@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/getlantern/systray"
 	"github.com/getlantern/systray/example/icon"
+	"github.com/skryvvara/focusframe/config"
 	"github.com/skryvvara/focusframe/input"
 	"github.com/skryvvara/focusframe/window"
 )
@@ -11,6 +12,8 @@ import (
 var Version = "vX.Y.Z" // this is set during build time
 
 func main() {
+	config.Initialize()
+
 	go window.AddAppOnKeyPress(input.VK_F4)
 	go window.WatchForegroundWindowChange()
 
