@@ -1,67 +1,75 @@
-# FocusFrame
+<div align="center">
+  <h1>FocusFrame</h1>
+</div>
 
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT">
+  </a>
 
+  <a href="https://goreportcard.com/report/github.com/skryvvara/focusframe">
+    <img src="https://goreportcard.com/badge/github.com/skryvvara/focusframe" alt="Go Report Card">
+  </a>
+
+  <a href="https://github.com/skryvvara/focusframe/actions/workflows/build.yml">
+    <img src="https://github.com/skryvvara/focusframe/actions/workflows/build.yml/badge.svg" alt="Pipeline Status">
+  </a>
+</p>
+
+## About
+
+FocusFrame is a window management tool designed to run applications in a borderless window just like the "Fake Fullscreen"-Mode many games offer while not filling the entire screen.
+
+<img src="./.github/images/example_screenshot.png" src="Screenshot of running Baldur's Gate 3 in a 16:9 2560x1440 window on 49 inch monitor">
+
+This is an open source alternative to the closed source variant [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home) developed by [Gameplay Crush](https://steamcommunity.com/id/GameplayCRUSH/).
+
+As FocusFrame is in early development, consider using his software for a more feature-complete and stable state.
 
 ## Usage
 
-> Please note that the usage of this application can change multiple times during the early stage of development.
+> Please note that the usage of this application can change multiple times during the early stage of development. The current approach using the `toggle`key will **not be** the final solution.
 
-Currently, the values for the window dimension, position and offset are hardcoded to fit as a 2560x1440 window
-in the middle of a 49" ultrawide monitor, to change these values you currently have to modify the variables in the
-`window` package.
+Press the `toggle`-Key (default `F4`) to manage/unmanage an application. Managed application will be moved to the configured position and size when receiving focus.
 
-While the application is running press `F4` to add or remove an application to/from the list of managed applications.
-The application should then be moved to the desired values. Managed applications are added to or removed from `config.toml`.
+## Installation
 
-This is an open source alternative to [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home)
-consider using that software for a more feature-complete and stable state.
+### Binary Releases
+
+Download and unpack from https://github.com/skryvvara/focusframe/releases.
 
 ## Build
 
 To build the application from source use the steps listed below.
 
-All required sources should be included in this repo including all the dependencies. So no internet connection should be required.
-
-Building for Windows on non Windows machines could fail because of missing DLLs. I haven't tested this yet.
-
-
 ### Windows
 
 ```sh
 make
+
+# or
+
+GOOS=windows \
+GOARCH=amd64 \
+go build \
+-ldflags '-H=windowsgui -X main.Version=v1.0.0'
+-o ./bin/focusframe.exe \
+./cmd
 ```
 
 The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 
-### Linux
-
-*currently not supported*
-
-### BSD
-
-*currently not supported*
-
-### Mac
-
-*currently not supported*
-
-## ToDo
-
-- [x] move window and remove borders (core functionality)
-- [x] create initial systray mockup
-- [x] create config file
-- [x] load (read) config file
-- [ ] create UI to edit config + write config file
-- [x] move managed apps automatically
-- [ ] add functionality for linux (low priority but planned)
-- [ ] add functionality for bsd (low priority but planned)
-- [ ] add functionality for mac (low priority but planned)
-
 ## Compatibility
 
-Currently, this tool is only compatible with Windows, although most parts and libs
-should work across Windows, linux, bsd and mac, the logic to move the desired window and
-hide the window border is highly dependent on Windows functionality.
+Compatiblity is currently limited to Windows 11 and Windows 10 (although Windows 8 and Windows 7 should work as well but are not actively tested).
+
+To learn more about topics that are currently blocking support for other operating systems, refer to this [wiki article](https://github.com/Skryvvara/FocusFrame/wiki/Operating-System-Support#what-issues-are-currently-blocking-support-for-different-operating-systems).
+
+## Contributors
+
+<a href="https://github.com/skryvvara/focusframe/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=skryvvara/focusframe" alt="Contributors">
+</a>
 
 ## Contributing
 
@@ -69,11 +77,8 @@ We welcome contributions! Please refer to our [contributing guide](/CONTRIBUTING
 
 ## Special thanks
 
-
+A big thanks to [Gameplay Crush](https://steamcommunity.com/id/GameplayCRUSH/), the developer of [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home) which is the software that inspired this project.
 
 ## License
 
-- MIT
-
-This program is licensed under the MIT license, meaning do whatever you want with it but don't call me when it explodes.
-Although I'm happy to provide fixes for bugs found in my code if there's time.
+FocusFrame is released under the [MIT](https://opensource.org/licenses/MIT) License.
