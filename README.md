@@ -59,14 +59,13 @@ The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 
 ## Compatibility
 
-Currently, this tool is only compatible with Windows, although most parts and libs 
+Currently, this tool is only compatible with Windows, although most parts and libs
 should work across Windows, linux, bsd and mac, the logic to move the desired window and
 hide the window border is highly dependent on Windows functionality.
 
-## Contribution
+## Contributing
 
-I am open for feature requests or code contributions. Feel free to create issues and/or merge requests.
-Note that although I'm open for feature requests, this is a one-man project I'm toying with in my spare time.
+We welcome contributions! Please refer to our [contributing guide](/CONTRIBUTING.md).
 
 ## Special thanks
 
