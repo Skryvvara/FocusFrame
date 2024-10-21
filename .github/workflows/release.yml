@@ -2,8 +2,10 @@ name: Build and Release Go Windows Application
 
 on:
   release:
-    types:
-      - created
+    types: [created]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -13,6 +15,10 @@ jobs:
       matrix:
         os:
           - "windows-latest"
+
+    permissions:
+      packages: write
+      contents: write
 
     steps:
       # Checkout the code from the repository
