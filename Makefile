@@ -11,7 +11,8 @@ all: clean build
 
 .PHONY: build
 build:
-	$(GO) build $(GO_FLAGS) -o $(BIN_DIR)/$(PROJECT_NAME).exe $(CMD_DIR)
+	$(GO) build $(GO_FLAGS) -o $(BIN_DIR)/$(PROJECT_NAME)-$(VERSION).exe $(CMD_DIR)
+	@echo "Built: $(BIN_DIR)/$(PROJECT_NAME)-$(VERSION).exe"
 
 .PHONY: vendor
 vendor:
