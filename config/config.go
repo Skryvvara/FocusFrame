@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"log"
 	"os"
 	"path"
 	"sync"
@@ -38,8 +39,15 @@ var configPath = path.Join(".", "config.toml")
 func Initialize() {
 	Config.ManagedApps = make(map[string]ManagedApp)
 
+	// try to create empty config file if file doesn't exist
+	if _, err := os.Stat(configPath); err != nil {
+		if err = saveConfig(); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	if _, err := toml.DecodeFile(configPath, &Config); err != nil {
-		fmt.Printf("Error loading config: %v\n", err)
+		log.Fatalf("Error loading config: %v\n", err)
 	}
 }
 
