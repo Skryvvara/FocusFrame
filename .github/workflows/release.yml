@@ -36,8 +36,8 @@ jobs:
         run: |
           make | tee build_output.txt
           # Extract the path of the built binary from the 'make' output
-          BINARY_PATH=$(grep -Eo 'bin/[a-zA-Z0-9\.\-_]+\.exe' build_output.txt)
-          echo "BINARY_PATH=${BINARY_PATH}" >> $GITHUB_ENV
+          $BINARY_PATH = Select-String -Path build_output.txt -Pattern 'bin/[a-zA-Z0-9\.\-_]+\.exe' | ForEach-Object { $_.Matches.Value }
+          Write-Host "BINARY_PATH=$BINARY_PATH" >> $env:GITHUB_ENV
 
       # Upload the built binary to the release
       - name: Upload Release Asset
