@@ -1,4 +1,4 @@
-PROJECT_NAME := focusframe
+PROJECT_NAME := FocusFrame
 CMD_DIR := ./cmd
 BIN_DIR := ./bin
 
