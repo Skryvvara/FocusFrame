@@ -32,26 +32,12 @@ jobs:
       - name: Build
         run: make
 
-      # Fetch certificate from secrets
-      - name: Decode certificate
-        shell: powershell
-        run: |
-          $certBase64 = "${{ secrets.CERTIFICATE_PFX_BASE64 }}"
-          [System.IO.File]::WriteAllBytes("certificate.pfx", [System.Convert]::FromBase64String($certBase64))
-
-      # Install WindowsSDK
-      - name: Install Windows SDK
-        run: |
-          choco install windows-sdk-10 --confirm
-
-      # Sign the executable
       - name: Sign the executable
-        run: |
-          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /f certificate.pfx /p $env:CERTIFICATE_PASSWORD /t http://timestamp.digicert.com /v ./bin/focusframe.exe
-        env:
-          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
-
-      # Verify signature
-      - name: Verify signature
-        run: |
-          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" verify /pa /v ./bin/focusframe.exe
+        uses: dlemstra/code-sign-action@v1
+        with:
+          certificate: '${{ secrets.CERTIFICATE_PFX_BASE64 }}'
+          password: '${{ secrets.CERTIFICATE_PASSWORD }}'
+          recursive: true
+          files: |
+            ./bin/focusframe.exe
+          description: 'FocusFrame'
