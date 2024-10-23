@@ -7,6 +7,7 @@ import (
 	"github.com/skryvvara/focusframe/config"
 	"github.com/skryvvara/focusframe/input"
 	"github.com/skryvvara/focusframe/internal/browser"
+	"github.com/skryvvara/focusframe/internal/startup"
 	"github.com/skryvvara/focusframe/window"
 	"log"
 )
@@ -47,7 +48,15 @@ func onReady() {
 	mWiki := systray.AddMenuItem("Open Wiki", "Open Wiki")
 	mForum := systray.AddMenuItem("Open Forum", "Open Forum")
 	mGithub := systray.AddMenuItem("Open Github", "Open Github repository")
+
+	enabledOnStartup, err := startup.IsEnabled()
+	if err != nil {
+		log.Fatal(err)
+	}
 	mRunOnStartup := systray.AddMenuItem("Run on Startup", "Run the application when starting the PC (Not implemented)")
+	if enabledOnStartup {
+		mRunOnStartup.Check()
+	}
 
 	systray.AddSeparator()
 
@@ -71,9 +80,19 @@ func onReady() {
 			}
 		case <-mRunOnStartup.ClickedCh:
 			if mRunOnStartup.Checked() {
-				mRunOnStartup.Uncheck()
+				err := startup.Disable()
+				if err != nil {
+					log.Println(err)
+				} else {
+					mRunOnStartup.Uncheck()
+				}
 			} else {
-				mRunOnStartup.Check()
+				err := startup.Enable()
+				if err != nil {
+					log.Println(err)
+				} else {
+					mRunOnStartup.Check()
+				}
 			}
 		case <-mQuit.ClickedCh:
 			fmt.Println("Requesting Exit")
