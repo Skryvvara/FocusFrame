@@ -49,11 +49,11 @@ jobs:
       # Sign the executable
       - name: Sign the executable
         run: |
-          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /f certificate.pfx /p $env:CERTIFICATE_PASSWORD /t http://timestamp.digicert.com /v focusframe.exe
+          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" sign /f certificate.pfx /p $env:CERTIFICATE_PASSWORD /t http://timestamp.digicert.com /v ./bin/focusframe.exe
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
       # Verify signature
       - name: Verify signature
         run: |
-          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" verify /pa /v focusframe.exe
+          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\signtool.exe" verify /pa /v ./bin/focusframe.exe
