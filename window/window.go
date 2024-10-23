@@ -164,7 +164,8 @@ func WatchForegroundWindowChange() {
 		if currentWindow != lastWindow && currentWindow != 0 {
 			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
 			if err != nil {
-				log.Fatal(err)
+				log.Println("Error getting executable:", err)
+				continue
 			}
 
 			fmt.Printf("Foreground window changed! New window exe: %s\n", executable)
@@ -263,7 +264,8 @@ func AddAppOnKeyPress(keyCode int) {
 
 			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
+				continue
 			}
 
 			hit := false
