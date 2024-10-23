@@ -2,7 +2,7 @@ PROJECT_NAME := FocusFrame
 CMD_DIR := ./cmd
 BIN_DIR := ./bin
 
-VERSION := v0.0.1-dev
+VERSION := v0.1.0
 
 GO := go
 GO_FLAGS := -ldflags "-H=windowsgui -X main.Version=${VERSION}"
