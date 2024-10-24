@@ -45,6 +45,7 @@ func onReady() {
 
 	systray.AddSeparator()
 
+	mShowConfig := systray.AddMenuItem("Show Configuration", "Show Configuration")
 	mWiki := systray.AddMenuItem("Open Wiki", "Open Wiki")
 	mForum := systray.AddMenuItem("Open Forum", "Open Forum")
 	mGithub := systray.AddMenuItem("Open Github", "Open Github repository")
@@ -53,7 +54,7 @@ func onReady() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mRunOnStartup := systray.AddMenuItem("Run on Startup", "Run the application when starting the PC (Not implemented)")
+	mRunOnStartup := systray.AddMenuItem("Run on Startup", "Run the application when starting the PC")
 	if enabledOnStartup {
 		mRunOnStartup.Check()
 	}
@@ -66,6 +67,10 @@ func onReady() {
 		select {
 		case <-mManageApplications.ClickedCh:
 			log.Println("Not implemented")
+		case <-mShowConfig.ClickedCh:
+			if err := config.OpenConfigPath(); err != nil {
+				log.Println(err)
+			}
 		case <-mWiki.ClickedCh:
 			if err := browser.OpenURL(REPO_URL + "/wiki"); err != nil {
 				log.Println(err)
