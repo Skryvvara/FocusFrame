@@ -40,8 +40,8 @@ body:
         1. Start '...'
         2. Configure '...'
         3. Etc ...
-      validations:
-        required: true
+    validations:
+      required: true
   - id: expected
     type: textarea
     attributes:
