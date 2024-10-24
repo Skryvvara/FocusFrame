@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Github Discussions for FocusFrame
+    url: https://github.com/srkyvvara/focusframe/discussions
+    about: Use the discussions to request features or get help with usage/configuration.
+  - name: Github Wiki for FocusFrame
+    url: https://github.com/skryvvara/focusframe/wiki
+    about: Find useful documentation about focusframe.
