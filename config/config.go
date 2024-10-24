@@ -5,7 +5,10 @@ import (
 	"github.com/BurntSushi/toml"
 	"log"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
+	"runtime"
 	"sync"
 )
 
@@ -33,11 +36,13 @@ type Type struct {
 }
 
 var Config Type
-var configPath = path.Join(".", "config.toml")
+var configPath string
 
 // Initialize loads the configuration from file into the Config struct.
 func Initialize() {
 	Config.ManagedApps = make(map[string]ManagedApp)
+
+	configPath = getConfigPath()
 
 	// try to create empty config file if file doesn't exist
 	if _, err := os.Stat(configPath); err != nil {
@@ -49,6 +54,42 @@ func Initialize() {
 	if _, err := toml.DecodeFile(configPath, &Config); err != nil {
 		log.Fatalf("Error loading config: %v\n", err)
 	}
+}
+
+// getConfigPath returns the configuration path according to the runtime os (including the filename).
+func getConfigPath() string {
+	filename := "config.toml"
+
+	if runtime.GOOS == "windows" {
+		return path.Join(os.Getenv("APPDATA"), "FocusFrame", filename)
+	} else {
+		return path.Join(os.Getenv("HOME"), ".config", "FocusFrame", filename)
+	}
+}
+
+// OpenConfigPath tried to issue a command based on the runtime os to reveal the configuration file in a file explorer.
+func OpenConfigPath() error {
+	configDir := filepath.Dir(configPath)
+	switch runtime.GOOS {
+	case "windows":
+		cmd := exec.Command("explorer", configDir)
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+	case "darwin":
+		cmd := exec.Command("open", configDir)
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+	case "linux":
+		cmd := exec.Command("xdg-open", configDir)
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+	default:
+		log.Fatalf("Unsupported platform: %s", runtime.GOOS)
+	}
+	return nil
 }
 
 // AddApplication adds the given executable to the config and tries to write the changes to the config file.
