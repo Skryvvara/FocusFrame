@@ -20,7 +20,7 @@
 
 FocusFrame is a window management tool designed to run applications in a borderless window just like the "Fake Fullscreen"-Mode many games offer while not filling the entire screen.
 
-<img src="./.github/images/example_screenshot.png" src="Screenshot of running Baldur's Gate 3 in a 16:9 2560x1440 window on 49 inch monitor">
+<img src="./.github/images/example_screenshot.png" alt="Screenshot of running Metpahor: Refantazio in a 16:9 2560x1440 window on 49 inch monitor">
 
 This is an open source alternative to the closed source variant [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home) developed by [Gameplay Crush](https://steamcommunity.com/id/GameplayCRUSH/).
 
