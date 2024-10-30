@@ -28,7 +28,6 @@ github.com/getlantern/ops
 # github.com/getlantern/systray v1.2.2
 ## explicit; go 1.13
 github.com/getlantern/systray
-github.com/getlantern/systray/example/icon
 # github.com/go-ole/go-ole v1.2.5
 ## explicit; go 1.12
 github.com/go-ole/go-ole
@@ -36,6 +35,9 @@ github.com/go-ole/go-ole/oleutil
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
+# github.com/lxn/win v0.0.0-20210218163916-a377121e959e
+## explicit; go 1.12
+github.com/lxn/win
 # github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
 ## explicit; go 1.12
 github.com/oxtoacart/bpool
