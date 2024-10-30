@@ -342,6 +342,16 @@ func MoveWindow(executable string) {
 		} else {
 			fmt.Println("Window position and size updated.")
 		}
+		// This fixes #47, I don't have a better fix currently but this will do for now
+		for i := 0; i < 3; i++ {
+			result, _, err := procSetWindowPos.Call(uintptr(hWnd), 0, uintptr(ws.OffsetX), uintptr(ws.OffsetY), uintptr(ws.Width), uintptr(ws.Height), SWP_NOZORDER|SWP_NOACTIVATE)
+			if result == 0 {
+				log.Println(err)
+				time.Sleep(100 * time.Millisecond) // Short delay between retries
+				continue
+			}
+			break // Success, break out of the loop
+		}
 	} else {
 		fmt.Println("Window position and size already correct, no changes needed.")
 	}
