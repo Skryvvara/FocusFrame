@@ -34,7 +34,7 @@ jobs:
       # Build the Windows executable
       - name: Build Windows executable
         run: |
-          make
+          make VERSION="$(git describe --tags)"
 
       # Pack the ZIP Archive
       - name: Pack ZIP Archive
