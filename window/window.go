@@ -3,6 +3,7 @@ package window
 import (
 	"fmt"
 	"github.com/StackExchange/wmi"
+	"github.com/lxn/win"
 	"github.com/skryvvara/focusframe/config"
 	"github.com/skryvvara/focusframe/input"
 	"github.com/skryvvara/focusframe/process"
@@ -40,6 +41,9 @@ const (
 	WS_THICKFRAME    = 0x00040000 // Resizable border
 	SWP_NOZORDER     = 0x0004
 	SWP_NOACTIVATE   = 0x0010
+
+	WINEVENT_OUTOFCONTEXT   = 0x0000
+	EVENT_SYSTEM_FOREGROUND = 0x0003
 )
 
 type RECT struct {
@@ -154,34 +158,63 @@ func isToolWindow(hwnd syscall.Handle) bool {
 	return false
 }
 
-func WatchForegroundWindowChange() {
-	var lastWindow uintptr
-	for {
-		// Get the handle of the current foreground window
-		currentWindow := GetForegroundWindow()
+// ForegroundWindowEvent is called when the foreground window changes
+func ForegroundWindowEvent(hWinEventHook win.HWINEVENTHOOK, event uint32, hwnd win.HWND, idObject int32, idChild int32, idEventThread uint32, dwmsEventTime uint32) uintptr {
+	executable, err := process.GetExecutableFromHandle(syscall.Handle(uintptr(hwnd)))
+	if err != nil {
+		log.Println("Error getting executable:", err)
+		return 1
+	}
 
-		// If the window handle has changed, we trigger the event
-		if currentWindow != lastWindow && currentWindow != 0 {
-			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
-			if err != nil {
-				log.Println("Error getting executable:", err)
-				continue
-			}
+	fmt.Printf("Foreground window changed! New window exe: %s\n", executable)
 
-			fmt.Printf("Foreground window changed! New window exe: %s\n", executable)
-
-			for _, game := range config.Config.ManagedApps {
-				if game.Executable == executable {
-					MoveWindow(executable)
-				}
-			}
-
-			// Update the last window handle
-			lastWindow = currentWindow
+	for _, game := range config.Config.ManagedApps {
+		if game.Executable == executable {
+			MoveWindow(executable)
 		}
+	}
 
-		// Sleep for a short duration before checking again
-		time.Sleep(500 * time.Millisecond)
+	return 0
+}
+
+// CreateWinEventHook sets up the SetWinEventHook for foreground window changes
+func CreateWinEventHook() win.HWINEVENTHOOK {
+	cb := win.WINEVENTPROC(ForegroundWindowEvent)
+
+	hook, err := win.SetWinEventHook(
+		EVENT_SYSTEM_FOREGROUND,
+		EVENT_SYSTEM_FOREGROUND,
+		0,
+		cb,
+		0,
+		0,
+		WINEVENT_OUTOFCONTEXT,
+	)
+	if err != nil {
+		fmt.Println("Error set window event hook:", err)
+		return 0
+	}
+	if hook == 0 {
+		fmt.Println("Failed to set hook.")
+	}
+	return hook
+}
+
+// WatchForegroundWindowChange starts listening for foreground window change events
+func WatchForegroundWindowChange() {
+	fmt.Println("Starting to watch foreground window changes")
+	hook := CreateWinEventHook()
+	if hook == 0 {
+		fmt.Println("Failed to create foreground window hook.")
+		return
+	}
+	defer win.UnhookWinEvent(hook)
+
+	// Run a basic Windows message loop to keep the program listening
+	var msg win.MSG
+	for win.GetMessage(&msg, 0, 0, 0) > 0 {
+		win.TranslateMessage(&msg)
+		win.DispatchMessage(&msg)
 	}
 }
 
