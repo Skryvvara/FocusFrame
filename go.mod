@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/StackExchange/wmi v1.2.1
+	github.com/creasty/defaults v1.8.0
 	github.com/getlantern/systray v1.2.2
 	github.com/go-ole/go-ole v1.2.5
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e

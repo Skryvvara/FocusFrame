@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"log"
 	"os"
 	"os/exec"
@@ -10,6 +9,9 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+
+	"github.com/BurntSushi/toml"
+	"github.com/creasty/defaults"
 )
 
 type WindowSettings struct {
@@ -26,10 +28,10 @@ type ManagedApp struct {
 
 type Type struct {
 	Global struct {
-		Width   int `toml:"width"`
-		Height  int `toml:"height"`
-		OffsetX int `toml:"offsetX"`
-		OffsetY int `toml:"offsetY"`
+		Width   int `toml:"width" default:"1920"`
+		Height  int `toml:"height" default:"1090"`
+		OffsetX int `toml:"offsetX" default:"0"`
+		OffsetY int `toml:"offsetY" default:"0"`
 	} `toml:"global"`
 	ManagedApps     map[string]ManagedApp `toml:"managed_apps"`
 	managedAppsLock sync.Mutex
@@ -43,6 +45,8 @@ func Initialize() {
 	Config.ManagedApps = make(map[string]ManagedApp)
 
 	configPath = getConfigPath()
+
+	defaults.Set(&Config)
 
 	// try to create empty config file if file doesn't exist
 	if _, err := os.Stat(configPath); err != nil {
