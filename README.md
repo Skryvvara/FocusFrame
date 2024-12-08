@@ -16,6 +16,22 @@
   </a>
 </p>
 
+## Contents
+
+- [About](#about)
+- [FAQ](#frequently-asked-questions)
+- [Usage](#usage)
+- [Installation](#installation)
+- [Build](#build)
+  - [Windows](#windows)
+- [Compatibility](#compatibility)
+  - [Operating Systems](#operating-systems)
+  - [Games](#games)
+- [Contributors](#contributors)
+- [Contributing](#contributing)
+- [Special thanks](#special-thanks)
+- [License](#license)
+
 ## About
 
 FocusFrame is a window management tool designed to run applications in a borderless window just like the "Fake Fullscreen"-Mode many games offer while not filling the entire screen.
@@ -25,6 +41,12 @@ FocusFrame is a window management tool designed to run applications in a borderl
 This is an open source alternative to the closed source variant [Windowed Borderless Gaming](https://westechsolutions.net/sites/WindowedBorderlessGaming/home) developed by [Gameplay Crush](https://steamcommunity.com/id/GameplayCRUSH/).
 
 As FocusFrame is in early development, consider using his software for a more feature-complete and stable state.
+
+## Frequently asked questions
+
+For frequently asked questions please see the [FAQ](https://github.com/Skryvvara/FocusFrame/wiki/Frequently-Asked-Questions) in the [wiki](https://github.com/Skryvvara/FocusFrame/wiki).
+
+If you are missing a question, feel free to contact us with your questions and we will see that they are added to the FAQ.
 
 ## Usage
 
@@ -61,9 +83,23 @@ The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 
 ## Compatibility
 
+### Operating Systems
+
 Compatiblity is currently limited to Windows 11 and Windows 10 (although Windows 8 and Windows 7 should work as well but are not actively tested).
 
+At least support for linux is actively planned. Other operating systems might follow but which and when support will be added is unknown.
+
 To learn more about topics that are currently blocking support for other operating systems, refer to this [wiki article](https://github.com/Skryvvara/FocusFrame/wiki/Operating-System-Support#what-issues-are-currently-blocking-support-for-different-operating-systems).
+
+### Games
+
+In theory, most games should "just work". To know for sure if your game works, check the [wiki](https://github.com/Skryvvara/FocusFrame/wiki) for [supported games](https://github.com/Skryvvara/FocusFrame/wiki/Verified-Games). This article lists all games that are tested and verified to either
+
+- work without issues
+- work partially
+- don't work
+
+In case your game is not listed, it does not mean, that the game doesn't work using this software. Feel free to test wether it works and provide us with feedback so we can expand this list.
 
 ## Contributors
 
