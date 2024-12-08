@@ -32,6 +32,7 @@ type Type struct {
 		Height  int `toml:"height" default:"1090"`
 		OffsetX int `toml:"offsetX" default:"0"`
 		OffsetY int `toml:"offsetY" default:"0"`
+		Hotkey  int `toml:"hotkey" default:"115"`
 	} `toml:"global"`
 	ManagedApps     map[string]ManagedApp `toml:"managed_apps"`
 	managedAppsLock sync.Mutex

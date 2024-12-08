@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/getlantern/systray"
 	"github.com/skryvvara/focusframe/config"
-	"github.com/skryvvara/focusframe/input"
 	"github.com/skryvvara/focusframe/internal/browser"
 	"github.com/skryvvara/focusframe/internal/startup"
 	"github.com/skryvvara/focusframe/window"
@@ -24,7 +23,7 @@ var iconFS embed.FS
 func main() {
 	config.Initialize()
 
-	go window.AddAppOnKeyPress(input.VK_F4)
+	go window.AddAppOnKeyPress(config.Config.Global.Hotkey)
 	go window.WatchForegroundWindowChange()
 
 	systray.Run(onReady, onExit)

@@ -11,8 +11,9 @@ var (
 
 // Define virtual key codes for the keys you are interested in.
 const (
-	VK_F3 = 0x72 // F3 key virtual key code
-	VK_F4 = 0x73 // F4 key virtual key code
+	VK_F3        = 0x72 // F3 key virtual key code
+	VK_F4        = 0x73 // F4 key virtual key code
+	VK_NUM_SLASH = 0x6F // Numpad Slash virtual key code
 	// Add other keys as needed
 )
 
