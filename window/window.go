@@ -1,18 +1,18 @@
 package window
 
 import (
-	"fmt"
+	"log"
+	"strings"
+	"syscall"
+	"time"
+	"unsafe"
+
 	"github.com/StackExchange/wmi"
 	"github.com/lxn/win"
 	"github.com/skryvvara/focusframe/config"
 	"github.com/skryvvara/focusframe/input"
 	"github.com/skryvvara/focusframe/process"
 	"golang.org/x/sys/windows"
-	"log"
-	"strings"
-	"syscall"
-	"time"
-	"unsafe"
 )
 
 var (
@@ -22,11 +22,11 @@ var (
 	procIsWindowVisible          = user32.NewProc("IsWindowVisible")
 	procEnumWindows              = user32.NewProc("EnumWindows")
 	procSetWindowPos             = user32.NewProc("SetWindowPos")
-	procSetWindowLong            = user32.NewProc("SetWindowLongW")
-	procGetWindowLong            = user32.NewProc("GetWindowLongW")
+	procSetWindowLongW           = user32.NewProc("SetWindowLongW")
+	procGetWindowLongW           = user32.NewProc("GetWindowLongW")
 	procGetWindowRect            = user32.NewProc("GetWindowRect")
 	procGetWindowTextW           = user32.NewProc("GetWindowTextW")
-	procGetWindowTextLength      = user32.NewProc("GetWindowTextLengthW")
+	procGetWindowTextLengthW     = user32.NewProc("GetWindowTextLengthW")
 	procGetWindowThreadProcessId = user32.NewProc("GetWindowThreadProcessId")
 	procGetForegroundWindow      = user32.NewProc("GetForegroundWindow")
 )
@@ -58,14 +58,24 @@ type WindowInfo struct {
 var OpenWindows []WindowInfo
 
 // GetWindowText retrieves the text of the window identified by the handle
+//
+// This function uses the GetWindowTextW function from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowtextw
 func GetWindowText(hwnd uintptr) string {
 	buf := make([]uint16, 256)
 	procGetWindowTextW.Call(hwnd, uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
 	return windows.UTF16ToString(buf)
 }
 
+// getWindowByProcessID tries to get the window beloging to the given PID.
+// On success the handle of the window is returned otherwise the return value is 0.
+//
+// This function uses the GetWindowThreadProcessId function from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowthreadprocessid
 func GetWindowByProcessID(pid uint32) syscall.Handle {
-	OpenWindows = nil // Clear previous windows
+	OpenWindows = nil
 
 	procEnumWindows.Call(syscall.NewCallback(EnumWindowsCallback), 0)
 
@@ -81,81 +91,83 @@ func GetWindowByProcessID(pid uint32) syscall.Handle {
 }
 
 // GetForegroundWindow gets the handle to the foreground window
+//
+// This function uses the GetForegroundWindow function from winuser.h.
+//
+// See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getforegroundwindow
 func GetForegroundWindow() uintptr {
 	handle, _, _ := procGetForegroundWindow.Call()
 	return handle
 }
 
+// Deprecated: This function was a PoC to print a list of currently open
+// windows and is currently unneeded and unused but kept for potential use
+// later on for the v1.0.0 Version featuring a GUI to select the applications
+// to be managed via a list.
 func printWindowList() {
 	procEnumWindows.Call(syscall.NewCallback(EnumWindowsCallback), 0)
 
-	// Example: Find the executable for "Windows PowerShell" window
 	for _, win := range OpenWindows {
-		fmt.Printf("Found PowerShell Window: Handle %v\n", win.Hwnd)
 		pid, err := process.GetProcessIDFromWindow(win.Hwnd)
 		if err != nil {
-			fmt.Println("Error getting PID:", err)
+			log.Println("Error getting PID:", err)
 			continue
 		}
 
 		executable, err := process.GetExecutableFromPID(pid)
 		if err != nil {
-			fmt.Println("Error getting executable:", err)
+			log.Println("Error getting executable:", err)
 			continue
 		}
 
-		fmt.Printf("%s Executable: %s\n", win.Title, executable)
+		log.Printf("%s Executable: %s\n", win.Title, executable)
 	}
 }
 
 // EnumWindowsCallback is the callback function for EnumWindows
+//
+// This function uses the GetWindowTextW and GetWindowTextLengthW functions from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowtextw
+// and https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowtextlengthw
 func EnumWindowsCallback(hwnd syscall.Handle, lParam uintptr) uintptr {
-	// Check if the window is visible
 	visible, _, err := procIsWindowVisible.Call(uintptr(hwnd))
 	if err != syscall.Errno(0) || visible == 0 {
-		return 1 // Skip if the window is not visible
+		return 1
 	}
 
-	// Filter out tool windows or other unwanted window styles
 	if isToolWindow(hwnd) {
-		return 1 // Skip if the window is a tool window
+		return 1
 	}
 
-	// Get the length of the window title
-	length, _, _ := procGetWindowTextLength.Call(uintptr(hwnd))
+	length, _, _ := procGetWindowTextLengthW.Call(uintptr(hwnd))
 	if length == 0 {
 		return 1
 	}
 
-	// Allocate a buffer for the window title
 	title := make([]uint16, length+1)
 
-	// Get the window title
 	_, _, _ = procGetWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&title[0])), uintptr(length+1))
 
-	// Convert the title to a string
 	windowTitle := syscall.UTF16ToString(title)
 
-	// Ignore windows with empty or unwanted titles
 	if windowTitle == "" {
 		return 1
 	}
 
-	// Add to the list of windows if the title is valid
 	OpenWindows = append(OpenWindows, WindowInfo{Title: windowTitle, Hwnd: hwnd})
 
 	return 1
 }
 
 // IsToolWindow checks if the window has the WS_EX_TOOLWINDOW style (tool windows)
+//
+// See https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 func isToolWindow(hwnd syscall.Handle) bool {
-	exStyle, _, _ := procGetWindowLong.Call(uintptr(hwnd), uintptr(GWL_EXSTYLE))
+	exStyle, _, _ := procGetWindowLongW.Call(uintptr(hwnd), uintptr(GWL_EXSTYLE))
 
-	// Check if the WS_EX_TOOLWINDOW bit is set
-	if exStyle&WS_EX_TOOLWINDOW != 0 {
-		return true
-	}
-	return false
+	return exStyle&WS_EX_TOOLWINDOW != 0
+
 }
 
 // ForegroundWindowEvent is called when the foreground window changes
@@ -166,7 +178,7 @@ func ForegroundWindowEvent(hWinEventHook win.HWINEVENTHOOK, event uint32, hwnd w
 		return 1
 	}
 
-	fmt.Printf("Foreground window changed! New window exe: %s\n", executable)
+	log.Printf("Foreground window changed! New window exe: %s\n", executable)
 
 	for _, game := range config.Config.ManagedApps {
 		if game.Executable == executable {
@@ -191,21 +203,21 @@ func CreateWinEventHook() win.HWINEVENTHOOK {
 		WINEVENT_OUTOFCONTEXT,
 	)
 	if err != nil {
-		fmt.Println("Error set window event hook:", err)
+		log.Println("Error set window event hook:", err)
 		return 0
 	}
 	if hook == 0 {
-		fmt.Println("Failed to set hook.")
+		log.Println("Failed to set hook.")
 	}
 	return hook
 }
 
 // WatchForegroundWindowChange starts listening for foreground window change events
 func WatchForegroundWindowChange() {
-	fmt.Println("Starting to watch foreground window changes")
+	log.Println("Starting to watch foreground window changes")
 	hook := CreateWinEventHook()
 	if hook == 0 {
-		fmt.Println("Failed to create foreground window hook.")
+		log.Println("Failed to create foreground window hook.")
 		return
 	}
 	defer win.UnhookWinEvent(hook)
@@ -231,23 +243,22 @@ func WatchProcessStart() {
 		query := "SELECT ProcessID, Name, ExecutablePath FROM Win32_Process"
 		err := wmi.Query(query, &processes)
 		if err != nil {
-			fmt.Println("Error querying WMI:", err)
+			log.Println("Error querying WMI:", err)
 			continue
 		}
 
 		for _, proc := range processes {
 
 			for _, app := range config.Config.ManagedApps {
-				if strings.ToLower(app.Executable) == strings.ToLower(proc.Name) {
-					fmt.Printf("Process started: %s, PID: %d\n", proc.Name, proc.ProcessID)
+				if strings.EqualFold(app.Executable, proc.Name) {
+					log.Printf("Process started: %s, PID: %d\n", proc.Name, proc.ProcessID)
 
-					// Now we call addGame to modify the window based on the process
 					MoveWindow(proc.Name)
 				}
 			}
 		}
 
-		time.Sleep(5 * time.Second) // Poll every 5 seconds
+		time.Sleep(5 * time.Second)
 	}
 }
 
@@ -260,17 +271,16 @@ func WatchProcessStart() {
 // This function might be removed in a future release.
 func selectWin() string {
 	for {
-		// Check if F3 key (virtual key code 114) is pressed
 		if input.IsKeyPressed(input.VK_F3) {
 			hWnd, _, _ := procGetForegroundWindow.Call()
 			if hWnd == 0 {
-				fmt.Println("No active window.")
+				log.Println("No active window.")
 				continue
 			}
 
-			length, _, _ := procGetWindowTextLength.Call(hWnd)
+			length, _, _ := procGetWindowTextLengthW.Call(hWnd)
 			if length == 0 {
-				fmt.Println("No title for the active window.")
+				log.Println("No title for the active window.")
 				continue
 			}
 
@@ -278,21 +288,24 @@ func selectWin() string {
 			procGetWindowTextW.Call(hWnd, uintptr(unsafe.Pointer(&buf[0])), length+1)
 
 			title := syscall.UTF16ToString(buf)
-			fmt.Printf("Active window title: %s\n", title)
+			log.Printf("Active window title: %s\n", title)
 
 			return title
 		}
 
-		// Sleep briefly to avoid high CPU usage
 		time.Sleep(100 * time.Millisecond)
 	}
 }
 
+// TODO: name is misleading since it also removes apps and the hotkey thing is not super user friendly.
+// AddAppOnKeyPress takes the keyCode and waits for the key to be pressed.
+// When pressed, the currently focused window is taken and either added to list of
+// managed applications or removed from it if it is already on the list.
+// Should this fail, the case will be ignored and the function waits on the next keypress.
 func AddAppOnKeyPress(keyCode int) {
 	for {
-		// Check if the F4 key is pressed
-		if input.IsKeyPressed(keyCode) { // If the most significant bit is set, the key is pressed
-			fmt.Println(config.Config.ManagedApps)
+		if input.IsKeyPressed(keyCode) {
+			log.Println(config.Config.ManagedApps)
 			currentWindow := GetForegroundWindow()
 
 			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
@@ -316,9 +329,110 @@ func AddAppOnKeyPress(keyCode int) {
 			}
 		}
 
-		// Sleep for a short duration to avoid excessive CPU usage
 		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+// getWindowStyle returns the window style as an uintptr.
+//
+// This function uses the GetWindowLongW function from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowlongw
+func getWindowStyle(hWnd syscall.Handle) uintptr {
+	style, _, _ := procGetWindowLongW.Call(uintptr(hWnd), uintptr(GWL_STYLE))
+	return style
+}
+
+// setWindowStyle sets the (hardcoded) window style to the given handle.
+//
+// This function uses the SetWindowLongW function from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowlongw
+func setWindowStyle(hWnd syscall.Handle) {
+	currentStyle := getWindowStyle(hWnd)
+
+	desiredStyle := (currentStyle &^ (WS_CAPTION | WS_THICKFRAME)) | WS_POPUP | WS_VISIBLE
+
+	if currentStyle != desiredStyle {
+		_, _, _ = procSetWindowLongW.Call(uintptr(hWnd), uintptr(GWL_STYLE), desiredStyle)
+		log.Println("Window style updated.")
+	} else {
+		log.Println("Window style already correct, no changes needed.")
+	}
+}
+
+// getWindowRect tries to get the rect of the window with the given handle.
+// On success the rect is returned and the error is nil.
+//
+// This function uses the GetWindowRect function from winuser.h.
+//
+// See https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowrect
+func getWindowRect(hWnd syscall.Handle) (RECT, error) {
+	var rect RECT
+	_, _, err := procGetWindowRect.Call(uintptr(hWnd), uintptr(unsafe.Pointer(&rect)))
+	if err != syscall.Errno(0) {
+		return rect, err
+	}
+	return rect, nil
+}
+
+// setWindowRect tries to set the window position and size.
+// On failure an error is returned otherwise the return value is nil.
+func setWindowPos(hWnd syscall.Handle, ws config.WindowSettings) error {
+	rect, err := getWindowRect(hWnd)
+	if err != nil {
+		return err
+	}
+
+	if int(rect.Right-rect.Left) == ws.Width &&
+		int(rect.Bottom-rect.Top) == ws.Height &&
+		int(rect.Left) == ws.OffsetX &&
+		int(rect.Top) == ws.OffsetY {
+		log.Println("Window position and size already correct, no changes needed.")
+		return nil
+	}
+
+	result, err := callSetWindowPosProc(hWnd, ws)
+	if result == 0 {
+		return err
+	}
+
+	// This fixes #47, I don't have a better fix currently but this will do for now
+	for i := 0; i < 3; i++ {
+		result, err := callSetWindowPosProc(hWnd, ws)
+		if result == 0 {
+			log.Println(err)
+			time.Sleep(100 * time.Millisecond) // Short delay between retries
+			continue
+		}
+		break
+	}
+
+	return nil
+}
+
+// callSetWindowPosProc is a wrapper for the call to procSetWindowPos to reduce redunancy in
+// setWindowPos. On success the result is returned otherwise the result (value 0) and an error
+// is returned.
+//
+// This function uses the SetWindow function from winuser.h.
+//
+// See https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowpos
+func callSetWindowPosProc(hWnd syscall.Handle, ws config.WindowSettings) (uintptr, error) {
+	result, _, err := procSetWindowPos.Call(
+		uintptr(hWnd),
+		0,
+		uintptr(ws.OffsetX),
+		uintptr(ws.OffsetY),
+		uintptr(ws.Width),
+		uintptr(ws.Height),
+		uintptr(SWP_NOZORDER|SWP_NOACTIVATE),
+	)
+
+	if result == 0 {
+		return result, err
+	}
+	return result, nil
 }
 
 // MoveWindow tries to find a window handle for the given executable and sets the window style and
@@ -328,64 +442,23 @@ func AddAppOnKeyPress(keyCode int) {
 func MoveWindow(executable string) {
 	pid := process.GetProcessIDByExecutable(executable) // Find the process ID by the executable
 	if pid == 0 {
-		fmt.Println("Process not found.")
+		log.Println("Process not found.")
 		return
 	}
 
 	hWnd := GetWindowByProcessID(pid) // Find the window handle by process ID
 	if hWnd == 0 {
-		fmt.Println("Window not found.")
+		log.Println("Window not found.")
 		return
 	}
 
-	// Get the current window style
-	currentStyle, _, _ := procGetWindowLong.Call(uintptr(hWnd), uintptr(GWL_STYLE))
-
-	// Desired window style (remove title bar and resizable border)
-	desiredStyle := (currentStyle &^ (WS_CAPTION | WS_THICKFRAME)) | WS_POPUP | WS_VISIBLE
-
-	// Only apply the new window style if it's different from the current one
-	if currentStyle != desiredStyle {
-		_, _, _ = procSetWindowLong.Call(uintptr(hWnd), uintptr(GWL_STYLE), desiredStyle)
-		fmt.Println("Window style updated.")
-	} else {
-		fmt.Println("Window style already correct, no changes needed.")
-	}
+	setWindowStyle(hWnd)
 
 	ws := config.GetWindowSettings(executable)
 
-	// Get the current window rectangle (position and size)
-	var rect RECT
-	_, _, err := procGetWindowRect.Call(uintptr(hWnd), uintptr(unsafe.Pointer(&rect)))
-	if err != syscall.Errno(0) {
-		fmt.Printf("Failed to get window rectangle: %v\n", err)
+	err := setWindowPos(hWnd, ws)
+	if err != nil {
+		log.Println(err)
 		return
-	}
-
-	currentWidth := int(rect.Right - rect.Left)
-	currentHeight := int(rect.Bottom - rect.Top)
-	currentX := int(rect.Left)
-	currentY := int(rect.Top)
-
-	// Only set the window position and size if they are different from the desired values
-	if currentWidth != ws.Width || currentHeight != ws.Height || currentX != ws.OffsetX || currentY != ws.OffsetY {
-		result, _, err := procSetWindowPos.Call(uintptr(hWnd), 0, uintptr(ws.OffsetX), uintptr(ws.OffsetY), uintptr(ws.Width), uintptr(ws.Height), SWP_NOZORDER|SWP_NOACTIVATE)
-		if result == 0 {
-			fmt.Printf("Failed to set window position. Error: %v\n", err)
-		} else {
-			fmt.Println("Window position and size updated.")
-		}
-		// This fixes #47, I don't have a better fix currently but this will do for now
-		for i := 0; i < 3; i++ {
-			result, _, err := procSetWindowPos.Call(uintptr(hWnd), 0, uintptr(ws.OffsetX), uintptr(ws.OffsetY), uintptr(ws.Width), uintptr(ws.Height), SWP_NOZORDER|SWP_NOACTIVATE)
-			if result == 0 {
-				log.Println(err)
-				time.Sleep(100 * time.Millisecond) // Short delay between retries
-				continue
-			}
-			break // Success, break out of the loop
-		}
-	} else {
-		fmt.Println("Window position and size already correct, no changes needed.")
 	}
 }
