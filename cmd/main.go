@@ -3,12 +3,13 @@ package main
 import (
 	"embed"
 	"fmt"
+	"log"
+
 	"github.com/getlantern/systray"
 	"github.com/skryvvara/focusframe/config"
 	"github.com/skryvvara/focusframe/internal/browser"
 	"github.com/skryvvara/focusframe/internal/startup"
 	"github.com/skryvvara/focusframe/window"
-	"log"
 )
 
 var Version = "vX.Y.Z" // this is set during build time
@@ -45,6 +46,7 @@ func onReady() {
 	systray.AddSeparator()
 
 	mShowConfig := systray.AddMenuItem("Show Configuration", "Show Configuration")
+	mReloadConfig := systray.AddMenuItem("Reload Configuration", "Reload Configuration")
 	mWiki := systray.AddMenuItem("Open Wiki", "Open Wiki")
 	mForum := systray.AddMenuItem("Open Forum", "Open Forum")
 	mGithub := systray.AddMenuItem("Open Github", "Open Github repository")
@@ -70,6 +72,8 @@ func onReady() {
 			if err := config.OpenConfigPath(); err != nil {
 				log.Println(err)
 			}
+		case <-mReloadConfig.ClickedCh:
+			config.Initialize()
 		case <-mWiki.ClickedCh:
 			if err := browser.OpenURL(REPO_URL + "/wiki"); err != nil {
 				log.Println(err)
