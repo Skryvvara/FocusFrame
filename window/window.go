@@ -108,7 +108,7 @@ func printWindowList() {
 	procEnumWindows.Call(syscall.NewCallback(EnumWindowsCallback), 0)
 
 	for _, win := range OpenWindows {
-		pid, err := process.GetProcessIDFromWindow(win.Hwnd)
+		pid, err := process.GetProcessIDFromWindow(uintptr(win.Hwnd))
 		if err != nil {
 			log.Println("Error getting PID:", err)
 			continue
@@ -172,7 +172,7 @@ func isToolWindow(hwnd syscall.Handle) bool {
 
 // ForegroundWindowEvent is called when the foreground window changes
 func ForegroundWindowEvent(hWinEventHook win.HWINEVENTHOOK, event uint32, hwnd win.HWND, idObject int32, idChild int32, idEventThread uint32, dwmsEventTime uint32) uintptr {
-	executable, err := process.GetExecutableFromHandle(syscall.Handle(uintptr(hwnd)))
+	executable, err := process.GetExecutableFromHandle(uintptr(hwnd))
 	if err != nil {
 		log.Println("Error getting executable:", err)
 		return 1
@@ -308,7 +308,7 @@ func AddAppOnKeyPress(keyCode int) {
 			log.Println(config.Config.ManagedApps)
 			currentWindow := GetForegroundWindow()
 
-			executable, err := process.GetExecutableFromHandle(syscall.Handle(currentWindow))
+			executable, err := process.GetExecutableFromHandle(currentWindow)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -440,7 +440,11 @@ func callSetWindowPosProc(hWnd syscall.Handle, ws config.WindowSettings) (uintpt
 //
 // If the style and dimensions are already set, nothing is done.
 func MoveWindow(executable string) {
-	pid := process.GetProcessIDByExecutable(executable) // Find the process ID by the executable
+	pid, err := process.GetProcessIDByExecutable(executable) // Find the process ID by the executable
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	if pid == 0 {
 		log.Println("Process not found.")
 		return
@@ -456,7 +460,7 @@ func MoveWindow(executable string) {
 
 	ws := config.GetWindowSettings(executable)
 
-	err := setWindowPos(hWnd, ws)
+	err = setWindowPos(hWnd, ws)
 	if err != nil {
 		log.Println(err)
 		return
