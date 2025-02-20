@@ -7,11 +7,15 @@ VERSION := v0.1.0
 GO := go
 GO_FLAGS := -ldflags "-H=windowsgui -X main.Version=${VERSION}"
 
-all: clean build
+all: clean test build
 
 .PHONY: build
 build:
 	$(GO) build $(GO_FLAGS) -o $(BIN_DIR)/$(PROJECT_NAME).exe $(CMD_DIR)
+
+.PHONY: test
+test:
+	$(GO) test -v ./...
 
 .PHONY: vendor
 vendor:
