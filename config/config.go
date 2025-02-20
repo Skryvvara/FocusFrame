@@ -47,6 +47,10 @@ func Initialize() {
 
 	configPath = getConfigPath()
 
+	if err := assertPath(path.Dir(configPath)); err != nil {
+		log.Fatal(err)
+	}
+
 	defaults.Set(&Config)
 
 	// try to create empty config file if file doesn't exist
@@ -70,6 +74,18 @@ func getConfigPath() string {
 	} else {
 		return path.Join(os.Getenv("HOME"), ".config", "FocusFrame", filename)
 	}
+}
+
+// assertPath checks if the given path exists, alternatively it tries to create all missing directories of the path.
+//
+// returns nil if the path exists or could be created, returns an error if creation of the path failed.
+func assertPath(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if err = os.MkdirAll(path, os.ModePerm); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // OpenConfigPath tried to issue a command based on the runtime os to reveal the configuration file in a file explorer.
