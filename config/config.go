@@ -60,7 +60,7 @@ func Initialize() {
 		}
 	}
 
-	if _, err := toml.DecodeFile(configPath, &Config); err != nil {
+	if err := loadConfig(); err != nil {
 		log.Fatalf("Error loading config: %v\n", err)
 	}
 }
@@ -152,16 +152,28 @@ func RemoveApplication(executable string) {
 
 // saveConfig tries to write the current configuration to file and returns an error if it fails.
 func saveConfig() error {
+	if len(configPath) <= 0 {
+		return fmt.Errorf("configPath is not set")
+	}
+
 	file, err := os.Create(configPath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	if err := toml.NewEncoder(file).Encode(Config); err != nil {
-		return err
+	err = toml.NewEncoder(file).Encode(Config)
+	return err
+}
+
+// loadConfig tries to read the configruation from the config file and returns an error if it fails.
+func loadConfig() error {
+	if len(configPath) <= 0 {
+		return fmt.Errorf("configPath is not set")
 	}
-	return nil
+
+	_, err := toml.DecodeFile(configPath, &Config)
+	return err
 }
 
 // IsValid checks if the window dimensions are valid.

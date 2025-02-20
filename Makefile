@@ -13,6 +13,10 @@ all: clean build
 build:
 	$(GO) build $(GO_FLAGS) -o $(BIN_DIR)/$(PROJECT_NAME).exe $(CMD_DIR)
 
+.PHONY: test
+test:
+	$(GO) test -v ./...
+
 .PHONY: vendor
 vendor:
 	$(GO) mod tidy
