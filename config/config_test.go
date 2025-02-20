@@ -22,9 +22,10 @@ func setup() (bool, error) {
 		if err := os.Rename(basePath, tmpPath); err != nil {
 			return false, fmt.Errorf("Could not move existing config dir from '%s' to '%s' with error: %v", basePath, tmpPath, err)
 		}
+		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 }
 
 func cleanup(movedDir bool) error {
