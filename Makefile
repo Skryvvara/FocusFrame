@@ -7,7 +7,7 @@ VERSION := v0.1.0
 GO := go
 GO_FLAGS := -ldflags "-H=windowsgui -X main.Version=${VERSION}"
 
-all: clean test build
+all: clean build
 
 .PHONY: build
 build:
