@@ -1,6 +1,14 @@
 PROJECT_NAME := FocusFrame
 CMD_DIR := ./cmd
-BIN_DIR := ./bin
+BIN_DIR := .\bin
+
+RM_CMD := rm -rf
+MKDIR_CMD := mkdir -p
+
+ifeq ($(OS),Windows_NT)
+	RM_CMD = rmdir /s /q
+	MKDIR_CMD = mkdir
+endif
 
 VERSION := v0.1.0
 
@@ -25,5 +33,5 @@ vendor:
 
 # Clean build artifacts
 clean:
-	rm -rf $(BIN_DIR)
-	mkdir -p $(BIN_DIR)
+	$(RM_CMD) $(BIN_DIR)
+	$(MKDIR_CMD) $(BIN_DIR)
