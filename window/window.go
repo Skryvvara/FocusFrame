@@ -460,6 +460,10 @@ func MoveWindow(executable string) {
 
 	ws := config.GetWindowSettings(executable)
 
+	if ws.Delay > 0 {
+		time.Sleep(time.Duration(ws.Delay) * time.Second)
+	}
+
 	err = setWindowPos(hWnd, ws)
 	if err != nil {
 		log.Println(err)

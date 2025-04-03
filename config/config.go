@@ -19,6 +19,7 @@ type WindowSettings struct {
 	Height  int `toml:"height"`
 	OffsetX int `toml:"offsetX"`
 	OffsetY int `toml:"offsetY"`
+	Delay   int `toml:"delay"`
 }
 
 type ManagedApp struct {
@@ -32,6 +33,7 @@ type Type struct {
 		Height  int `toml:"height" default:"1090"`
 		OffsetX int `toml:"offsetX" default:"0"`
 		OffsetY int `toml:"offsetY" default:"0"`
+		Delay   int `toml:"delay" default:"0"`
 		Hotkey  int `toml:"hotkey" default:"115"`
 	} `toml:"global"`
 	ManagedApps     map[string]ManagedApp `toml:"managed_apps"`
@@ -207,5 +209,6 @@ func getGlobalWindowSettings() WindowSettings {
 		Height:  Config.Global.Height,
 		OffsetX: Config.Global.OffsetX,
 		OffsetY: Config.Global.OffsetY,
+		Delay:   Config.Global.Delay,
 	}
 }
