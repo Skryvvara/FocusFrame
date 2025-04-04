@@ -192,12 +192,8 @@ func (ws WindowSettings) IsValid() bool {
 // GetWindowSettings returns the WindowSettings specific to a managed application or the global WindowSettings if no
 // specific or invalid settings were found.
 func GetWindowSettings(executable string) WindowSettings {
-	for _, app := range Config.ManagedApps {
-		if app.Executable == executable {
-			if app.Dimensions.IsValid() {
-				return app.Dimensions
-			}
-		}
+	if app, ok := Config.ManagedApps[executable]; ok {
+		return app.Dimensions
 	}
 	return getGlobalWindowSettings()
 }
