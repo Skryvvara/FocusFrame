@@ -314,19 +314,13 @@ func AddAppOnKeyPress(keyCode int) {
 				continue
 			}
 
-			hit := false
-			for _, app := range config.Config.ManagedApps {
-				if app.Executable == executable {
-					hit = true
-				}
+			if _, ok := config.Config.ManagedApps[executable]; ok {
+				config.RemoveApplication(executable)
+				continue
 			}
 
-			if !hit {
-				config.AddApplication(executable)
-				MoveWindow(executable)
-			} else {
-				config.RemoveApplication(executable)
-			}
+			config.AddApplication(executable)
+			MoveWindow(executable)
 		}
 
 		time.Sleep(100 * time.Millisecond)
