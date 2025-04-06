@@ -36,10 +36,10 @@ type Type struct {
 		Delay   int `toml:"delay" default:"0"`
 		Hotkey  int `toml:"hotkey" default:"115"`
 	} `toml:"global"`
-	ManagedApps     map[string]ManagedApp `toml:"managed_apps"`
-	managedAppsLock sync.Mutex
+	ManagedApps map[string]ManagedApp `toml:"managed_apps"`
 }
 
+var ManagedAppsLock sync.Mutex
 var Config Type
 var configPath string
 
@@ -117,8 +117,8 @@ func OpenConfigPath() error {
 
 // AddApplication adds the given executable to the config and tries to write the changes to the config file.
 func AddApplication(executable string) {
-	Config.managedAppsLock.Lock()
-	defer Config.managedAppsLock.Unlock()
+	ManagedAppsLock.Lock()
+	defer ManagedAppsLock.Unlock()
 
 	// Get global window settings for the dimensions
 	dimensions := getGlobalWindowSettings()
@@ -140,8 +140,8 @@ func AddApplication(executable string) {
 
 // RemoveApplication removes the given executable from the config and tries to write the changes to the config file.
 func RemoveApplication(executable string) {
-	Config.managedAppsLock.Lock()
-	defer Config.managedAppsLock.Unlock()
+	ManagedAppsLock.Lock()
+	defer ManagedAppsLock.Unlock()
 
 	// Remove the app from the ManagedApps map
 	delete(Config.ManagedApps, executable)
