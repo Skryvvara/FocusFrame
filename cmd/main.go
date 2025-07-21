@@ -4,6 +4,9 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/getlantern/systray"
 	"github.com/skryvvara/focusframe/config"
@@ -19,11 +22,18 @@ var iconFS embed.FS
 func main() {
 	config.Initialize()
 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		<-sigs
+		systray.Quit()
+	}()
+
 	go window.AddAppOnKeyPress(config.Config.Global.Hotkey)
 	go window.WatchForegroundWindowChange()
 
-	//systray.Run(onReady, onExit)
-	gui.ShowGUI()
+	systray.Run(onReady, onExit)
 }
 
 // onReady setup systray
