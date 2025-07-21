@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>FocusFrame Config</title>
+
+  <style>
+    *, *::after, *::before {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --background-color: #bcc1cd;
+        --foreground-color: rgb(35 39 47);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --background-color: #1a1d23;
+            --background-color-alternative: #16181d;
+            --foreground-color: #f6f7f9;
+            --brand-color: #00674F;
+            --brand-color-alterantive: #0A3C30;
+        }
+    }
+
+    html {
+        background-color: var(--background-color);
+        color: var(--foreground-color);
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .tabs {
+        width: 100%;
+        display: flex;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 1em;
+    }
+    .tab {
+        padding: 10px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-bottom: none;
+    }
+    .tab.active {
+        background-color: var(--background-color-alternative);
+    }
+    .tab-content {
+        padding: 10px;
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+
+    .tab-content > h2 {
+        margin-bottom: 10px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 15px;
+    }
+
+    input, select {
+        background-color: var(--background-color);
+        color: var(--foreground-color);
+        padding: 7.5px;
+        appearance: none;
+        border: 1px solid var(--foreground-color);
+        transition: all 300ms ease-out;
+        outline: none;
+    }
+    input:focus, select:focus {
+        border-color: var(--brand-color);
+        outline: none;
+    }
+
+    .form-button {
+        padding: 10px;
+        appearance: none;
+        background-color: var(--brand-color);
+        color: var(--foreground-color);
+        border: 1px solid var(--brand-color);
+        border-radius: 0.125rem;
+        box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05),
+              0 1px 3px rgba(0, 0, 0, 0.4);
+        transition: all 300ms ease-out;
+        cursor: pointer;
+    }
+    .form-button:hover {
+        background-color: var(--brand-color-alterantive);
+        border-color: var(--brand-color-alterantive);
+        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.08),
+              0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    label {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+
+    label > input {
+        width: 100%;
+    }
+
+  </style>
+</head>
+<body>
+    <div class="tabs">
+        <div class="tab active" data-tab="1">Global Settings</div>
+        <div class="tab" data-tab="2">App Settings</div>
+    </div>
+
+    <div class="tab-content active" id="tab-1">
+        <h2>Global Settings</h2>
+        <form onsubmit="save(); return false;">
+            <div class="form-row">
+                <label>Width: <input type="number" id="width" /></label>
+                <label>Height: <input type="number" id="height" /></label>
+            </div>
+            <div class="form-row">
+                <label>OffsetX: <input type="number" id="offsetX" /></label>
+                <label>OffsetY: <input type="number" id="offsetY" /></label>
+            </div>
+            <div class="form-row">
+                <label>Delay: <input type="number" id="delay" /></label>
+            </div>
+            <div class="form-row">
+                <label>Hotkey: <input type="number" id="hotkey" /></label>
+            </div>
+
+            <div class="form-row">
+                <button class="form-button" type="submit">Save Config</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="tab-content" id="tab-2">
+        <h2>App specific Settings</h2>
+        <form onsubmit="saveApp(); return false;">
+            <select name="managed-app" id="managed-app" onchange="changedApp(event)">
+                <option value="default" disabled selected>Select an app</option>
+            </select>
+
+            <div class="form-row">
+                <label>Friendly Name: <input type="text" id="app-friendly-name"/></label>
+            </div>
+            <div class="form-row">
+                <label>Width: <input type="number" id="app-width" /></label>
+                <label>Height: <input type="number" id="app-height" /></label>
+            </div>
+            <div class="form-row">
+                <label>OffsetX: <input type="number" id="app-offsetX" /></label>
+                <label>OffsetY: <input type="number" id="app-offsetY" /></label>
+            </div>
+            <div class="form-row">
+                <label>Delay: <input type="number" id="app-delay" /></label>
+            </div>
+
+            <div class="form-row">
+                <button class="form-button" type="submit">Save Config</button>
+            </div>
+        </form>
+    </div>
+
+  <script>
+    let apps = null;
+
+    // LOAD CONFIG
+    async function load() {
+        const config = await window.getGlobalConfig();
+        document.getElementById("width").value = config.Width;
+        document.getElementById("height").value = config.Height;
+        document.getElementById("offsetX").value = config.OffsetX;
+        document.getElementById("offsetY").value = config.OffsetY;
+        document.getElementById("delay").value = config.Delay;
+        document.getElementById("hotkey").value = config.Hotkey;
+
+        const data = await window.getManagedApps();
+        apps = JSON.parse(data)
+
+        const select = document.getElementById('managed-app');
+        for (const key in apps) {
+            const app = apps[key]
+            const option = document.createElement('option');
+            option.value = app.Executable;
+            option.textContent = app.FriendlyName !== "" ? app.FriendlyName : app.Executable;
+            select.appendChild(option);
+        }
+    }
+
+    // SAVE CONFIG
+    async function save() {
+        const newConfig = {
+            Width: parseInt(document.getElementById("width").value),
+            Height: parseInt(document.getElementById("height").value),
+            OffsetX: parseInt(document.getElementById("offsetX").value),
+            OffsetY: parseInt(document.getElementById("offsetY").value),
+            Delay: parseInt(document.getElementById("delay").value),
+            Hotkey: parseInt(document.getElementById("hotkey").value),
+        };
+
+        await window.saveGlobalConfigChanges(newConfig);
+    }
+
+    // SAVE APP
+    async function saveApp() {
+        const newConfig = {
+            Executable: document.getElementById("managed-app").value,
+            FriendlyName: document.getElementById("app-friendly-name").value,
+            Dimensions: {
+                Width: parseInt(document.getElementById("app-width").value),
+                Height: parseInt(document.getElementById("app-height").value),
+                OffsetX: parseInt(document.getElementById("app-offsetX").value),
+                OffsetY: parseInt(document.getElementById("app-offsetY").value),
+                Delay: parseInt(document.getElementById("app-delay").value),
+            },
+        };
+        await window.saveAppChanges(newConfig);
+    }
+
+    // ON CHANGE SELECT APPS
+    async function changedApp(event) {
+        let value = event.target.value;
+
+        if (value === "default") return;
+
+        const app = apps[value];
+
+        document.getElementById("app-friendly-name").value = app.FriendlyName;
+        document.getElementById("app-width").value = app.Dimensions.Width;
+        document.getElementById("app-height").value = app.Dimensions.Height;
+        document.getElementById("app-offsetX").value = app.Dimensions.OffsetX;
+        document.getElementById("app-offsetY").value = app.Dimensions.OffsetY;
+        document.getElementById("app-delay").value = app.Dimensions.Delay;
+    }
+
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+        // Remove active classes
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add('active');
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+        });
+    });
+
+    window.onload = load;
+  </script>
+</body>
+</html>

@@ -13,5 +13,11 @@ go install github.com/akavel/rsrc@v0.10.2
 Then use is it like this
 
 ```shell
-rscr -ico ./cmd/monitor.ico -o ./cmd/focusframe.syso
+rsrc -ico ./cmd/monitor.ico -o ./cmd/focusframe.syso
+```
+
+Or easier use
+
+```shell
+make syso
 ```

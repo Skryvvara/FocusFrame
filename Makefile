@@ -5,7 +5,7 @@ BIN_DIR := ./bin
 VERSION := v0.1.0
 
 GO := go
-GO_FLAGS := -ldflags "-H=windowsgui -X main.Version=${VERSION}"
+GO_FLAGS := -ldflags "-H=windowsgui -X github.com/skryvvara/focusframe/config.Version=${VERSION}"
 
 all: clean build
 
@@ -13,9 +13,17 @@ all: clean build
 build:
 	$(GO) build $(GO_FLAGS) -o $(BIN_DIR)/$(PROJECT_NAME).exe $(CMD_DIR)
 
+.PHONY: dev
+dev:
+	${GO} run ./cmd
+
 .PHONY: test
 test:
 	$(GO) test -v ./...
+
+.PHONY: syso
+syso:
+	rsrc -ico ./cmd/monitor.ico -o ./cmd/focusframe.syso
 
 .PHONY: vendor
 vendor:

@@ -14,6 +14,8 @@ import (
 	"github.com/creasty/defaults"
 )
 
+var Version string
+
 type WindowSettings struct {
 	Width   int `toml:"width"`
 	Height  int `toml:"height"`
@@ -23,8 +25,9 @@ type WindowSettings struct {
 }
 
 type ManagedApp struct {
-	Executable string         `toml:"executable"`
-	Dimensions WindowSettings `toml:"dimensions"`
+	Executable   string         `toml:"executable"`
+	FriendlyName string         `toml:"friendly_name"`
+	Dimensions   WindowSettings `toml:"dimensions"`
 }
 
 type Type struct {
@@ -57,7 +60,7 @@ func Initialize() {
 
 	// try to create empty config file if file doesn't exist
 	if _, err := os.Stat(configPath); err != nil {
-		if err = saveConfig(); err != nil {
+		if err = SaveConfig(); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -133,7 +136,7 @@ func AddApplication(executable string) {
 	Config.ManagedApps[executable] = app
 
 	// Save the updated configuration
-	if err := saveConfig(); err != nil {
+	if err := SaveConfig(); err != nil {
 		fmt.Printf("Failed to save config after adding application: %s\n", err)
 	}
 }
@@ -147,13 +150,13 @@ func RemoveApplication(executable string) {
 	delete(Config.ManagedApps, executable)
 
 	// Save the updated configuration
-	if err := saveConfig(); err != nil {
+	if err := SaveConfig(); err != nil {
 		fmt.Printf("Failed to save config after removing application: %s\n", err)
 	}
 }
 
-// saveConfig tries to write the current configuration to file and returns an error if it fails.
-func saveConfig() error {
+// SaveConfig tries to write the current configuration to file and returns an error if it fails.
+func SaveConfig() error {
 	if len(configPath) <= 0 {
 		return fmt.Errorf("configPath is not set")
 	}
@@ -185,6 +188,10 @@ func (ws WindowSettings) IsValid() bool {
 		return false
 	}
 
+	if ws.Delay < 0 {
+		return false
+	}
+
 	// Additional checks can be added here as needed
 	return true
 }
@@ -200,11 +207,15 @@ func GetWindowSettings(executable string) WindowSettings {
 
 // getGlobalWindowSettings returns a WindowSettings struct holding the global configuration.
 func getGlobalWindowSettings() WindowSettings {
+	return GetWindowSettingsFromStruct(Config)
+}
+
+func GetWindowSettingsFromStruct(config Type) WindowSettings {
 	return WindowSettings{
-		Width:   Config.Global.Width,
-		Height:  Config.Global.Height,
-		OffsetX: Config.Global.OffsetX,
-		OffsetY: Config.Global.OffsetY,
-		Delay:   Config.Global.Delay,
+		Width:   config.Global.Width,
+		Height:  config.Global.Height,
+		OffsetX: config.Global.OffsetX,
+		OffsetY: config.Global.OffsetY,
+		Delay:   config.Global.Delay,
 	}
 }
