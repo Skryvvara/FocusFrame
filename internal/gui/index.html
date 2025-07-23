@@ -5,196 +5,344 @@
   <title>FocusFrame Config</title>
 
   <style>
-    *, *::after, *::before {
+    :root {
+        --bg-color: #f0f2f5;
+        --card-bg: #ffffff;
+        --primary: #0078d7;
+        --text: #222;
+        --border: #ccc;
+        --radius: 6px;
+        --font: 'Segoe UI', sans-serif;
+    }
+
+    html, body {
         margin: 0;
         padding: 0;
+        height: 100%;
+        font-family: var(--font);
+        background-color: var(--bg-color);
+        color: var(--text);
+    }
+
+    body.dark {
+        --bg-color: #1e1e1e;
+        --card-bg: #2c2c2c;
+        --primary: #0a84ff;
+        --text: #f0f0f0;
+        --border: #444;
+        background-color: var(--bg-color);
+        color: var(--text);
+    }
+
+    body.dark select,
+    body.dark input {
+        background-color: #3a3a3a;
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    body.dark .tab-button {
+        color: var(--text);
+    }
+
+    body.dark .tab-button.active {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    body.dark .tab-button:hover {
+        background-color: #333;
+    }
+
+    body.dark .theme-toggle label {
+        color: var(--text);
+    }
+
+    .config-menu {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        height: 100%;
         box-sizing: border-box;
     }
 
-    :root {
-        --background-color: #bcc1cd;
-        --foreground-color: rgb(35 39 47);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --background-color: #1a1d23;
-            --background-color-alternative: #16181d;
-            --foreground-color: #f6f7f9;
-            --brand-color: #00674F;
-            --brand-color-alterantive: #0A3C30;
-        }
-    }
-
-    html {
-        background-color: var(--background-color);
-        color: var(--foreground-color);
-    }
-
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .tabs {
-        width: 100%;
-        display: flex;
-        border-bottom: 2px solid #ccc;
-        margin-bottom: 1em;
-    }
-    .tab {
-        padding: 10px;
-        cursor: pointer;
-        border: 1px solid transparent;
-        border-bottom: none;
-    }
-    .tab.active {
-        background-color: var(--background-color-alternative);
-    }
-    .tab-content {
-        padding: 10px;
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-
-    .tab-content > h2 {
-        margin-bottom: 10px;
+    .config-menu h2 {
+        margin: 0 0 15px;
+        font-size: 20px;
+        color: var(--primary);
     }
 
     form {
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        justify-content: space-between;
     }
 
     .form-row {
         display: flex;
-        gap: 15px;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
     }
 
-    input, select {
-        background-color: var(--background-color);
-        color: var(--foreground-color);
-        padding: 7.5px;
-        appearance: none;
-        border: 1px solid var(--foreground-color);
-        transition: all 300ms ease-out;
-        outline: none;
-    }
-    input:focus, select:focus {
-        border-color: var(--brand-color);
-        outline: none;
-    }
-
-    .form-button {
-        padding: 10px;
-        appearance: none;
-        background-color: var(--brand-color);
-        color: var(--foreground-color);
-        border: 1px solid var(--brand-color);
-        border-radius: 0.125rem;
-        box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05),
-              0 1px 3px rgba(0, 0, 0, 0.4);
-        transition: all 300ms ease-out;
-        cursor: pointer;
-    }
-    .form-button:hover {
-        background-color: var(--brand-color-alterantive);
-        border-color: var(--brand-color-alterantive);
-        box-shadow: 0 4px 10px rgba(255, 255, 255, 0.08),
-              0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    label {
-        width: 100%;
+    .config-group {
+        flex: 1;
         display: flex;
         flex-direction: column;
+    }
+
+    .config-group label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .config-group input {
+        padding: 8px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    select {
+        padding: 8px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        width: 100%;
+        box-sizing: border-box;
+        background-color: white;
+    }
+
+    .config-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 10px;
+    }
+
+    button {
+        padding: 8px 14px;
+        font-size: 13px;
+        border: none;
+        border-radius: var(--radius);
+        background-color: var(--primary);
+        color: white;
         cursor: pointer;
     }
 
-    label > input {
-        width: 100%;
+    button:hover {
+        opacity: 0.9;
+    }
+
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 15px;
+    }
+
+    .tab-button {
+        background: none;
+        border: none;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text);
+        border-radius: 0px;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.2s;
+    }
+
+    .tab-button:hover {
+        background-color: #e9ebee;
+    }
+
+    .tab-button.active {
+        border-bottom: 2px solid var(--primary);
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .tab-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tab-content.hidden {
+        display: none;
+    }
+
+    @media (max-width: 400px) {
+        .form-row {
+            flex-direction: column;
+        }
     }
 
   </style>
 </head>
 <body>
-    <div class="tabs">
-        <div class="tab active" data-tab="1">Global Settings</div>
-        <div class="tab" data-tab="2">App Settings</div>
-    </div>
+    <div class="config-menu">
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('global')">Global Settings</button>
+            <button class="tab-button" onclick="showTab('app')">App Specific</button>
+        </div>
 
-    <div class="tab-content active" id="tab-1">
-        <h2>Global Settings</h2>
-        <form onsubmit="save(); return false;">
-            <div class="form-row">
-                <label>Width: <input type="number" id="width" /></label>
-                <label>Height: <input type="number" id="height" /></label>
-            </div>
-            <div class="form-row">
-                <label>OffsetX: <input type="number" id="offsetX" /></label>
-                <label>OffsetY: <input type="number" id="offsetY" /></label>
-            </div>
-            <div class="form-row">
-                <label>Delay: <input type="number" id="delay" /></label>
-            </div>
-            <div class="form-row">
-                <label>Hotkey: <input type="number" id="hotkey" /></label>
-            </div>
+        <div class="tab-content" id="global">
+            <h2>Global Settings</h2>
+            <form onsubmit="save(); return false;">
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="width">Width</label>
+                        <input type="number" id="width" />
+                    </div>
+                    <div class="config-group">
+                        <label for="height">Height</label>
+                        <input type="number" id="height" />
+                    </div>
+                </div>
 
-            <div class="form-row">
-                <button class="form-button" type="submit">Save Config</button>
-            </div>
-        </form>
-    </div>
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="offsetX">OffsetX</label>
+                        <input type="number" id="offsetX" />
+                    </div>
+                    <div class="config-group">
+                        <label for="offsetY">OffsetY</label>
+                        <input type="number" id="offsetY" />
+                    </div>
+                </div>
 
-    <div class="tab-content" id="tab-2">
-        <h2>App specific Settings</h2>
-        <form onsubmit="saveApp(); return false;">
-            <select name="managed-app" id="managed-app" onchange="changedApp(event)">
-                <option value="default" disabled selected>Select an app</option>
-            </select>
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="delay" title="Amount of seconds to wait before applying the window settings.">Delay</label>
+                        <input type="number" title="Amount of seconds to wait before applying the window settings." id="delay" />
+                    </div>
+                </div>
 
-            <div class="form-row">
-                <label>Friendly Name: <input type="text" id="app-friendly-name"/></label>
-            </div>
-            <div class="form-row">
-                <label>Width: <input type="number" id="app-width" /></label>
-                <label>Height: <input type="number" id="app-height" /></label>
-            </div>
-            <div class="form-row">
-                <label>OffsetX: <input type="number" id="app-offsetX" /></label>
-                <label>OffsetY: <input type="number" id="app-offsetY" /></label>
-            </div>
-            <div class="form-row">
-                <label>Delay: <input type="number" id="app-delay" /></label>
-            </div>
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="hotkey">Hotkey</label>
+                        <input type="number" id="hotkey" />
+                    </div>
+                </div>
 
-            <div class="form-row">
-                <button class="form-button" type="submit">Save Config</button>
-            </div>
-        </form>
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="theme">Theme</label>
+                        <select name="theme" id="theme" onchange="changeTheme(event)">
+                            <option value="false">Light</option>
+                            <option value="true">Dark</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button class="save" type="submit">Save Config</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-content hidden" id="app">
+            <h2>App Specific Settings</h2>
+            <form onsubmit="saveApp(); return false;">
+                <div class="form-row">
+                    <div class="config-group" style="flex: 1;">
+                        <label for="managed-app">Select an App</label>
+                        <select name="managed-app" id="managed-app" onchange="changedApp(event)">
+                        <option value="default" disabled selected>Select an app</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="app-friendly-name">Friendly Name</label>
+                        <input type="text" autocomplete="off" id="app-friendly-name" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="app-width">Width</label>
+                        <input type="number" id="app-width" />
+                    </div>
+                    <div class="config-group">
+                        <label for="app-height">Height</label>
+                        <input type="number" id="app-height" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="app-offsetX">OffsetX</label>
+                        <input type="number" id="app-offsetX" />
+                    </div>
+                    <div class="config-group">
+                        <label for="app-offsetY">OffsetY</label>
+                        <input type="number" id="app-offsetY" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="config-group">
+                        <label for="app-delay" title="Amount of seconds to wait before applying the window settings.">Delay</label>
+                        <input type="number" title="Amount of seconds to wait before applying the window settings." id="app-delay" />
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button class="save" type="submit">Save Config</button>
+                </div>
+            </form>
+        </div>
     </div>
 
   <script>
     let apps = null;
 
+    function showTab(id) {
+        const tabs = document.querySelectorAll('.tab-content');
+        const buttons = document.querySelectorAll('.tab-button');
+
+        tabs.forEach(tab => {
+            tab.classList.add('hidden');
+        });
+
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        document.getElementById(id).classList.remove('hidden');
+        event.target.classList.add('active');
+    }
+
+    function changeTheme(event) {
+        if (event.target.value == "true") {
+            if (!document.body.classList.contains('dark')) {
+                document.body.classList.add('dark')
+            }
+        } else {
+            if (document.body.classList.contains('dark')) {
+                document.body.classList.remove('dark')
+            }
+        }
+    }
+
     // LOAD CONFIG
     async function load() {
         const config = await window.getGlobalConfig();
+        const data = await window.getManagedApps();
+        apps = JSON.parse(data)
+
         document.getElementById("width").value = config.Width;
         document.getElementById("height").value = config.Height;
         document.getElementById("offsetX").value = config.OffsetX;
         document.getElementById("offsetY").value = config.OffsetY;
         document.getElementById("delay").value = config.Delay;
         document.getElementById("hotkey").value = config.Hotkey;
-
-        const data = await window.getManagedApps();
-        apps = JSON.parse(data)
+        document.getElementById("theme").value = config.DarkTheme
 
         const select = document.getElementById('managed-app');
         for (const key in apps) {
@@ -203,6 +351,11 @@
             option.value = app.Executable;
             option.textContent = app.FriendlyName !== "" ? app.FriendlyName : app.Executable;
             select.appendChild(option);
+        }
+
+        const darkMode = config.DarkTheme;
+        if (darkMode) {
+            document.body.classList.add('dark');
         }
     }
 
@@ -215,6 +368,7 @@
             OffsetY: parseInt(document.getElementById("offsetY").value),
             Delay: parseInt(document.getElementById("delay").value),
             Hotkey: parseInt(document.getElementById("hotkey").value),
+            Theme: document.getElementById("theme").value === "true" ? true : false,
         };
 
         await window.saveGlobalConfigChanges(newConfig);
@@ -251,21 +405,6 @@
         document.getElementById("app-offsetY").value = app.Dimensions.OffsetY;
         document.getElementById("app-delay").value = app.Dimensions.Delay;
     }
-
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-        // Remove active classes
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-
-        // Add active class to clicked tab and corresponding content
-        tab.classList.add('active');
-        document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
-        });
-    });
 
     window.onload = load;
   </script>

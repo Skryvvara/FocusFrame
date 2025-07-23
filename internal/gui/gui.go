@@ -40,7 +40,7 @@ func ShowGUI() {
 	w.Bind("saveAppChanges", bindSaveAppChanges)
 
 	w.SetTitle(fmt.Sprintf("FocusFrame %s", config.Version))
-	w.SetSize(500, 475, webview.HintNone)
+	w.SetSize(600, 600, webview.HintFixed)
 	w.Navigate(dataURI)
 
 	w.Run()
@@ -75,6 +75,9 @@ func bindSaveGlobalConfigChanges(data map[string]interface{}) {
 	}
 	if v, ok := data["Hotkey"].(float64); ok {
 		cfg.Hotkey = int(v)
+	}
+	if v, ok := data["Theme"].(bool); ok {
+		cfg.DarkTheme = bool(v)
 	}
 
 	err := config.SaveConfig()

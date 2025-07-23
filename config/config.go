@@ -32,12 +32,13 @@ type ManagedApp struct {
 
 type Type struct {
 	Global struct {
-		Width   int `toml:"width" default:"1920"`
-		Height  int `toml:"height" default:"1090"`
-		OffsetX int `toml:"offsetX" default:"0"`
-		OffsetY int `toml:"offsetY" default:"0"`
-		Delay   int `toml:"delay" default:"0"`
-		Hotkey  int `toml:"hotkey" default:"115"`
+		Width     int  `toml:"width" default:"1920"`
+		Height    int  `toml:"height" default:"1090"`
+		OffsetX   int  `toml:"offsetX" default:"0"`
+		OffsetY   int  `toml:"offsetY" default:"0"`
+		Delay     int  `toml:"delay" default:"0"`
+		Hotkey    int  `toml:"hotkey" default:"115"`
+		DarkTheme bool `toml:"dark_theme" default:"false"`
 	} `toml:"global"`
 	ManagedApps map[string]ManagedApp `toml:"managed_apps"`
 }
