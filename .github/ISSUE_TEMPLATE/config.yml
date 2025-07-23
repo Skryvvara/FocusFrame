@@ -1,7 +1,10 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Discord Discussions and Support for FocusFrame
+    url: https://discord.gg/M2HeEAHAjd
+    about: Use the discord server to share experiences or get help with usage/configuration.
   - name: Github Discussions for FocusFrame
-    url: https://github.com/srkyvvara/focusframe/discussions
+    url: https://github.com/Skryvvara/FocusFrame/discussions
     about: Use the discussions to request features or get help with usage/configuration.
   - name: Github Wiki for FocusFrame
     url: https://github.com/skryvvara/focusframe/wiki
