@@ -31,17 +31,6 @@ body:
         - Other
     validations:
       required: true
-  - id: reproduce
-    type: textarea
-    attributes:
-      label: Steps to reproduce
-      description: How can we reproduce the bug?
-      value: |
-        1. Start '...'
-        2. Configure '...'
-        3. Etc ...
-    validations:
-      required: true
   - id: expected
     type: textarea
     attributes:
@@ -54,6 +43,17 @@ body:
     attributes:
       label: Actual result
       description: A clear and concise description on what is actually happening.
+    validations:
+      required: true
+  - id: reproduce
+    type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the bug?
+      value: |
+        1. Start '...'
+        2. Configure '...'
+        3. Etc ...
     validations:
       required: true
   - id: logs
