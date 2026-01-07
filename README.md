@@ -87,7 +87,14 @@ The executable is then found in the `bin` directory (e.g) `bin/focusframe.exe`.
 
 Compatiblity is currently limited to Windows 11 and Windows 10 (although Windows 8 and Windows 7 should work as well but are not actively tested).
 
-At least support for linux is actively planned. Other operating systems might follow but which and when support will be added is unknown.
+~~At least support for linux is actively planned~~. Other operating systems might follow but which and when support will be added is unknown.
+
+Support for Linux is no longer planned as [gamescope](https://github.com/ValveSoftware/gamescope) proves to be the better solution for this purpose when running Linux.
+To use gamescope, install it with your distribution's package manager or compile it from source and then add the following to the launch options of your game or launch it via the command line:
+
+`gamescope -b --force-grab-cursor -W 2560 -H 1440 -- %command%`
+
+Gamescope has many benefits which are lacking from FocusFrame is therefore the recommended solution for Linux users.
 
 To learn more about topics that are currently blocking support for other operating systems, refer to this [wiki article](https://github.com/Skryvvara/FocusFrame/wiki/Operating-System-Support#what-issues-are-currently-blocking-support-for-different-operating-systems).
 
