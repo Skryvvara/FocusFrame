@@ -3,6 +3,7 @@ package process
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"unsafe"
 
@@ -15,15 +16,17 @@ var (
 	kernel32 = syscall.NewLazyDLL("kernel32.dll")
 	psapi    = syscall.NewLazyDLL("psapi.dll")
 
-	procGetWindowThreadProcessId = user32.NewProc("GetWindowThreadProcessId")
-	procOpenProcess              = kernel32.NewProc("OpenProcess")
-	procGetModuleFileNameEx      = psapi.NewProc("GetModuleFileNameExW")
-	procCloseHandle              = kernel32.NewProc("CloseHandle")
+	procGetWindowThreadProcessId  = user32.NewProc("GetWindowThreadProcessId")
+	procOpenProcess               = kernel32.NewProc("OpenProcess")
+	procGetModuleFileNameEx       = psapi.NewProc("GetModuleFileNameExW")
+	procCloseHandle               = kernel32.NewProc("CloseHandle")
+	procQueryFullProcessImageName = kernel32.NewProc("QueryFullProcessImageNameW")
 )
 
 const (
-	PROCESS_QUERY_INFORMATION = 0x0400
-	PROCESS_VM_READ           = 0x0010
+	PROCESS_QUERY_INFORMATION         = 0x0400
+	PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+	PROCESS_VM_READ                   = 0x0010
 )
 
 // Win32_Process WMI class structure
@@ -32,13 +35,19 @@ type Win32_Process struct {
 	Name      string
 }
 
+// escapeWQL escapes a string for use inside a single-quoted WQL literal.
+func escapeWQL(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	return strings.ReplaceAll(s, `'`, `\'`)
+}
+
 // GetProcessIDByExecutable tries to find the PID (Process ID) of a process with
 // the given executable.
 //
 // Returns either the PID as a uint32 or an error if no PID could be found.
 func GetProcessIDByExecutable(executable string) (uint32, error) {
 	var processes []Win32_Process
-	query := fmt.Sprintf("SELECT ProcessID, Name FROM Win32_Process WHERE Name='%s'", executable)
+	query := fmt.Sprintf("SELECT ProcessID, Name FROM Win32_Process WHERE Name='%s'", escapeWQL(executable))
 	err := wmi.Query(query, &processes)
 	if err != nil {
 		return 0, fmt.Errorf("error querying WMI: %v", err)
@@ -68,24 +77,20 @@ func GetProcessIDFromWindow(hWnd uintptr) (uint32, error) {
 //
 // Returns either the Executable as a string or an error if the executable could not be found.
 func GetFullExecutableFromPID(pid uint32) (string, error) {
-	hProcess, _, _ := procOpenProcess.Call(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, 0, uintptr(pid))
+	hProcess, _, err := procOpenProcess.Call(PROCESS_QUERY_LIMITED_INFORMATION, 0, uintptr(pid))
 	if hProcess == 0 {
-		return "", fmt.Errorf("failed to open process: %v", syscall.GetLastError())
+		return "", fmt.Errorf("failed to open process %d: %v", pid, err)
 	}
-	defer func() {
-		ret, _, err := procCloseHandle.Call(hProcess)
-		if ret == 0 {
-			fmt.Printf("Failed to close handle: %v\n", err)
-		}
-	}()
+	defer procCloseHandle.Call(hProcess)
 
-	exePath := make([]uint16, syscall.MAX_PATH)
-	_, _, err := procGetModuleFileNameEx.Call(hProcess, 0, uintptr(unsafe.Pointer(&exePath[0])), syscall.MAX_PATH)
-	if err != syscall.Errno(0) {
-		return "", fmt.Errorf("failed to get module file name: %v", err)
+	size := uint32(32768)
+	buf := make([]uint16, size)
+	ret, _, err := procQueryFullProcessImageName.Call(
+		hProcess, 0, uintptr(unsafe.Pointer(&buf[0])), uintptr(unsafe.Pointer(&size)))
+	if ret == 0 {
+		return "", fmt.Errorf("failed to query image name of process %d: %v", pid, err)
 	}
-
-	return syscall.UTF16ToString(exePath), nil
+	return syscall.UTF16ToString(buf[:size]), nil
 }
 
 // GetExecutableFromPID functions like GetFullExectuableFromPID but returns only the executable's name.
